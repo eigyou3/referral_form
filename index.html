@@ -735,9 +735,9 @@ async function doSubmit() {
   try {
     await fetch(GAS_URL, {
       method: 'POST',
-      mode: 'no-cors', // これによりブラウザ上のエラー表示を抑制
+      mode: 'no-cors', 
       headers: {
-        'Content-Type': 'text/plain' // application/jsonではなくtext/plainにするのがGASの定石
+        'Content-Type': 'text/plain' // ここが重要
       },
       body: JSON.stringify(payload)
     });
