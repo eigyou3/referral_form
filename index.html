@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ご紹介キャンペーン</title>
+<title>いい暮らし、広がる<br></title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -458,10 +458,10 @@
 
 <div class="wrapper">
   <div class="header">
-    <p class="header-eyebrow">Referral Campaign</p>
-    <h1>ご紹介<br>キャンペーン</h1>
+    <p class="header-eyebrow">いい暮らし、広がる</p>
+    <h1>you too<br>me too</h1>
     <div class="header-line"></div>
-    <p>大切な方をご紹介いただき<br>ありがとうございます。<br>下記フォームよりお申し込みください。</p>
+    <p>モデルハウスに<br>行ってみて！<br>とだけお伝えください</p>
   </div>
 
   <!-- ステップ -->
@@ -494,11 +494,11 @@
     <div class="row2">
       <div class="field">
         <label>氏名<span class="req">*</span></label>
-        <input type="text" id="r-name" placeholder="山田 太郎" autocomplete="name">
+        <input type="text" id="r-name" placeholder="こまい　太郎" autocomplete="name">
       </div>
       <div class="field">
         <label>フリガナ</label>
-        <input type="text" id="r-kana" placeholder="ヤマダ タロウ">
+        <input type="text" id="r-kana" placeholder="コマイ　タロウ">
       </div>
     </div>
     <div class="field">
@@ -509,6 +509,10 @@
       <label>電話番号</label>
       <input type="tel" id="r-phone" placeholder="090-0000-0000" autocomplete="tel">
     </div>
+    <div class="field">
+      <label>担当者</label>
+      <input type="text" id="r-staff" placeholder="営業担当者の名前を記入してください">
+    </div>
     <div class="err-msg" id="err-1">入力内容をご確認ください。</div>
     <div class="btn-row">
       <button class="btn-next" onclick="goNext(1)"><span>次へ →</span></button>
@@ -518,15 +522,15 @@
   <!-- STEP 2 -->
   <div class="form-section" id="sec-2">
     <h2 class="section-heading">紹介先の情報</h2>
-    <p class="section-sub">ご紹介される方のご情報をご入力ください。</p>
+    <p class="section-sub">ご紹介する方のご情報をご入力ください。</p>
     <div class="row2">
       <div class="field">
         <label>氏名<span class="req">*</span></label>
-        <input type="text" id="n-name" placeholder="鈴木 花子">
+        <input type="text" id="n-name" placeholder="田中">
       </div>
       <div class="field">
         <label>フリガナ</label>
-        <input type="text" id="n-kana" placeholder="スズキ ハナコ">
+        <input type="text" id="n-kana" placeholder="タナカ">
       </div>
     </div>
     <div class="field">
@@ -536,10 +540,6 @@
     <div class="field">
       <label>電話番号</label>
       <input type="tel" id="n-phone" placeholder="090-0000-0000">
-    </div>
-    <div class="field">
-      <label>会社名</label>
-      <input type="text" id="n-company" placeholder="株式会社〇〇">
     </div>
     <div class="err-msg" id="err-2">紹介先の氏名は必須です。</div>
     <div class="btn-row">
@@ -699,10 +699,10 @@ function buildConfirm() {
     ['氏名（紹介者）', document.getElementById('r-name').value],
     ['メール（紹介者）', document.getElementById('r-email').value],
     ['電話（紹介者）', document.getElementById('r-phone').value || '—'],
+    ['担当者（紹介者）', document.getElementById('r-staff').value || '—'],
     ['氏名（紹介先）', document.getElementById('n-name').value],
     ['メール（紹介先）', document.getElementById('n-email').value || '—'],
     ['電話（紹介先）', document.getElementById('n-phone').value || '—'],
-    ['会社名（紹介先）', document.getElementById('n-company').value || '—'],
     ['ギフトカード希望', `<div class="gift-tags">${giftNames}</div>`],
   ];
 
@@ -722,11 +722,11 @@ async function doSubmit() {
     referrerKana:  document.getElementById('r-kana').value,
     referrerEmail: document.getElementById('r-email').value,
     referrerPhone: document.getElementById('r-phone').value,
+    referrerStaff:    document.getElementById('r-staff').value,
     newName:       document.getElementById('n-name').value,
     newKana:       document.getElementById('n-kana').value,
     newEmail:      document.getElementById('n-email').value,
     newPhone:      document.getElementById('n-phone').value,
-    newCompany:    document.getElementById('n-company').value,
     gift1: selected[0] ? GIFTS.find(g=>g.id===selected[0]).name.replace('\n','') : '',
     gift2: selected[1] ? GIFTS.find(g=>g.id===selected[1]).name.replace('\n','') : '',
     gift3: selected[2] ? GIFTS.find(g=>g.id===selected[2]).name.replace('\n','') : '',
