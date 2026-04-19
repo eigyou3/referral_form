@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ご紹介キャンペーン</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: rgba(255,255,255,0.08);
+    --border-active: rgba(255,220,100,0.6);
+    --gold: #e8c96d;
+    --gold-dim: rgba(232,201,109,0.15);
+    --text: #f0ede8;
+    --text-muted: rgba(240,237,232,0.45);
+    --accent: #e8c96d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── 背景パーティクル ── */
+  #bg-canvas {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none; opacity: 0.4;
+  }
+
+  /* ── ライン装飾 ── */
+  .deco-line {
+    position: fixed; top: 0; left: 50%;
+    width: 1px; height: 100vh;
+    background: linear-gradient(to bottom, transparent, rgba(232,201,109,0.12), transparent);
+    transform: translateX(-50%);
+    z-index: 0;
+  }
+
+  /* ── メインラッパー ── */
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  /* ── ヘッダー ── */
+  .header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.2s ease forwards;
+  }
+
+  .header-eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 8vw, 3rem);
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  .header-line {
+    width: 40px; height: 1px;
+    background: var(--gold);
+    margin: 0 auto 1rem;
+  }
+
+  .header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  /* ── ステップインジケーター ── */
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.35s ease forwards;
+  }
+
+  .step {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+  }
+
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--text-muted);
+    transition: all 0.4s ease;
+    position: relative;
+  }
+
+  .step-dot.active {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  .step-dot.done {
+    border-color: var(--gold);
+    background: var(--gold);
+    color: var(--bg);
+  }
+
+  .step-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .step.active .step-label { color: var(--gold); }
+
+  .step-connector {
+    width: 40px; height: 1px;
+    background: var(--border);
+    margin: 0 4px;
+    margin-bottom: 20px;
+    transition: background 0.4s;
+  }
+
+  .step-connector.done { background: var(--gold); }
+
+  /* ── フォームセクション ── */
+  .form-section {
+    display: none;
+    opacity: 0;
+  }
+
+  .form-section.active {
+    display: block;
+    animation: sectionIn 0.6s ease forwards;
+  }
+
+  @keyframes sectionIn {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .section-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 300;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .section-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 1.75rem;
+    line-height: 1.7;
+  }
+
+  /* ── フィールド ── */
+  .field {
+    margin-bottom: 1.25rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .field label .req {
+    color: var(--gold);
+    margin-left: 3px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 13px 16px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    outline: none;
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .field input:focus {
+    border-color: var(--border-active);
+    background: rgba(232,201,109,0.04);
+  }
+
+  .field input::placeholder { color: var(--text-muted); font-size: 13px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ── ギフトカードグリッド ── */
+  .gift-hint {
+    font-size: 12px; color: var(--text-muted);
+    margin-bottom: 14px; line-height: 1.7;
+  }
+
+  .gift-hint strong { color: var(--gold); }
+
+  .gift-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .gift-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    overflow: hidden;
+  }
+
+  .gift-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--gold-dim);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .gift-card:hover { border-color: rgba(232,201,109,0.3); }
+  .gift-card:hover::before { opacity: 0.5; }
+
+  .gift-card.selected {
+    border-color: var(--gold);
+    background: rgba(232,201,109,0.06);
+  }
+
+  .gift-card.selected::before { opacity: 1; }
+
+  .gift-card.disabled {
+    opacity: 0.3; cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .gift-rank {
+    position: absolute; top: 6px; right: 6px;
+    width: 18px; height: 18px;
+    background: var(--gold);
+    color: var(--bg);
+    border-radius: 50%;
+    font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+  }
+
+  .gift-card.selected .gift-rank {
+    opacity: 1; transform: scale(1);
+  }
+
+  .gift-icon {
+    font-size: 22px; margin-bottom: 6px;
+    display: block; position: relative; z-index: 1;
+  }
+
+  .gift-name {
+    font-size: 11px; font-weight: 400;
+    color: var(--text);
+    position: relative; z-index: 1;
+    line-height: 1.4;
+  }
+
+  /* ── ボタン ── */
+  .btn-row {
+    display: flex; gap: 10px;
+    margin-top: 1.75rem;
+  }
+
+  .btn-back {
+    flex: 0 0 auto;
+    padding: 14px 20px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+  .btn-next {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    color: var(--gold);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-next::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--gold);
+    transform: translateX(-101%);
+    transition: transform 0.3s ease;
+    z-index: 0;
+  }
+
+  .btn-next:hover::before { transform: translateX(0); }
+  .btn-next:hover { color: var(--bg); }
+  .btn-next span { position: relative; z-index: 1; }
+  .btn-next:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-next:disabled::before { display: none; }
+
+  /* ── エラーメッセージ ── */
+  .err-msg {
+    font-size: 12px; color: #f07070;
+    margin-top: 0.5rem; display: none;
+  }
+
+  /* ── 確認画面 ── */
+  .confirm-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+  }
+
+  .confirm-table tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .confirm-table td {
+    padding: 12px 4px;
+    font-size: 13px;
+  }
+
+  .confirm-table td:first-child {
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    width: 38%;
+    vertical-align: top;
+    padding-top: 14px;
+  }
+
+  .gift-tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+
+  .gift-tag {
+    padding: 3px 10px;
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--gold);
+  }
+
+  /* ── 完了画面 ── */
+  .done-wrap {
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  .done-circle {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 28px;
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(232,201,109,0.3); }
+    50%      { box-shadow: 0 0 0 14px rgba(232,201,109,0); }
+  }
+
+  .done-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem; font-weight: 300;
+    margin-bottom: 0.75rem;
+  }
+
+  .done-sub {
+    font-size: 13px; color: var(--text-muted);
+    line-height: 1.9;
+  }
+
+  /* ── フェードアップ ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── エラー入力シェイク ── */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60% { transform: translateX(-6px); }
+    40%,80% { transform: translateX(6px); }
+  }
+
+  .shake { animation: shake 0.4s ease; }
+
+  @media (max-width: 420px) {
+    .gift-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .gift-card { padding: 10px 6px; }
+    .gift-icon { font-size: 18px; }
+    .gift-name { font-size: 10px; }
+    .step-connector { width: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="deco-line"></div>
+
+<div class="wrapper">
+  <div class="header">
+    <p class="header-eyebrow">Referral Campaign</p>
+    <h1>ご紹介<br>キャンペーン</h1>
+    <div class="header-line"></div>
+    <p>大切な方をご紹介いただき<br>ありがとうございます。<br>下記フォームよりお申し込みください。</p>
+  </div>
+
+  <!-- ステップ -->
+  <div class="steps" id="steps">
+    <div class="step active" id="step-1">
+      <div class="step-dot active">1</div>
+      <span class="step-label">あなたの情報</span>
+    </div>
+    <div class="step-connector" id="conn-1"></div>
+    <div class="step" id="step-2">
+      <div class="step-dot">2</div>
+      <span class="step-label">紹介先の情報</span>
+    </div>
+    <div class="step-connector" id="conn-2"></div>
+    <div class="step" id="step-3">
+      <div class="step-dot">3</div>
+      <span class="step-label">ギフト選択</span>
+    </div>
+    <div class="step-connector" id="conn-3"></div>
+    <div class="step" id="step-4">
+      <div class="step-dot">4</div>
+      <span class="step-label">確認・送信</span>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="form-section active" id="sec-1">
+    <h2 class="section-heading">あなたの情報</h2>
+    <p class="section-sub">ご紹介いただく方のご連絡先をお聞かせください。</p>
+    <div class="row2">
+      <div class="field">
+        <label>氏名<span class="req">*</span></label>
+        <input type="text" id="r-name" placeholder="山田 太郎" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>フリガナ</label>
+        <input type="text" id="r-kana" placeholder="ヤマダ タロウ">
+      </div>
+    </div>
+    <div class="field">
+      <label>メールアドレス<span class="req">*</span></label>
+      <input type="email" id="r-email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>電話番号</label>
+      <input type="tel" id="r-phone" placeholder="090-0000-0000" autocomplete="tel">
+    </div>
+    <div class="err-msg" id="err-1">入力内容をご確認ください。</div>
+    <div class="btn-row">
+      <button class="btn-next" onclick="goNext(1)"><span>次へ →</span></button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="form-section" id="sec-2">
+    <h2 class="section-heading">紹介先の情報</h2>
+    <p class="section-sub">ご紹介される方のご情報をご入力ください。</p>
+    <div class="row2">
+      <div class="field">
+        <label>氏名<span class="req">*</span></label>
+        <input type="text" id="n-name" placeholder="鈴木 花子">
+      </div>
+      <div class="field">
+        <label>フリガナ</label>
+        <input type="text" id="n-kana" placeholder="スズキ ハナコ">
+      </div>
+    </div>
+    <div class="field">
+      <label>メールアドレス</label>
+      <input type="email" id="n-email" placeholder="friend@example.com">
+    </div>
+    <div class="field">
+      <label>電話番号</label>
+      <input type="tel" id="n-phone" placeholder="090-0000-0000">
+    </div>
+    <div class="field">
+      <label>会社名</label>
+      <input type="text" id="n-company" placeholder="株式会社〇〇">
+    </div>
+    <div class="err-msg" id="err-2">紹介先の氏名は必須です。</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goBack(2)">← 戻る</button>
+      <button class="btn-next" onclick="goNext(2)"><span>次へ →</span></button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="form-section" id="sec-3">
+    <h2 class="section-heading">ギフトカードを選択</h2>
+    <p class="section-sub">ご希望のギフトカードを最大3種類、優先順にお選びください。<br>在庫のある中からお渡しします。</p>
+    <p class="gift-hint">選択中: <strong id="sel-cnt">0</strong> / 3</p>
+    <div class="gift-grid" id="gift-grid"></div>
+    <div class="err-msg" id="err-3">1つ以上選択してください。</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goBack(3)">← 戻る</button>
+      <button class="btn-next" onclick="goNext(3)"><span>確認画面へ →</span></button>
+    </div>
+  </div>
+
+  <!-- STEP 4 確認 -->
+  <div class="form-section" id="sec-4">
+    <h2 class="section-heading">内容の確認</h2>
+    <p class="section-sub">以下の内容でよろしければ「送信する」を押してください。</p>
+    <table class="confirm-table" id="confirm-table"></table>
+    <div class="err-msg" id="err-4">送信に失敗しました。時間をおいて再度お試しください。</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goBack(4)">← 戻る</button>
+      <button class="btn-next" id="submit-btn" onclick="doSubmit()"><span>送信する ✓</span></button>
+    </div>
+  </div>
+
+  <!-- 完了 -->
+  <div class="form-section" id="sec-done">
+    <div class="done-wrap">
+      <div class="done-circle">✓</div>
+      <h2 class="done-title">送信完了</h2>
+      <p class="done-sub">ご紹介いただきありがとうございます。<br>担当者よりご連絡いたします。<br><br>ギフトカードの準備ができ次第<br>お渡しさせていただきます。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========= 設定 =========
+// ★ Google Apps Script のデプロイURLをここに貼り付けてください
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwDrsldIZmZrIoP-m5o_rwwCFAkLERa2exDWZkn_D4A6qRpDMfkeTg-H7uZ98spcPbk/exec";
+
+const GIFTS = [
+  { id:"amazon",  icon:"📦", name:"Amazon\nギフト" },
+  { id:"rakuten", icon:"🛒", name:"楽天\nギフト" },
+  { id:"google",  icon:"▶",  name:"Google\nプレイ" },
+  { id:"itunes",  icon:"🎵", name:"iTunes\nカード" },
+  { id:"quo",     icon:"💳", name:"QUO\nカード" },
+  { id:"tosho",   icon:"📚", name:"図書\nカード" },
+  { id:"lawson",  icon:"🏪", name:"ローソン\n商品券" },
+  { id:"seven",   icon:"7",  name:"セブン\n商品券" },
+  { id:"suica",   icon:"🚃", name:"Suica\nギフト" },
+];
+
+let selected = [];
+let currentStep = 1;
+
+// ギフトグリッド描画
+function renderGifts() {
+  const grid = document.getElementById('gift-grid');
+  grid.innerHTML = GIFTS.map(g => {
+    const idx = selected.indexOf(g.id);
+    const isSel = idx !== -1;
+    const isDisabled = !isSel && selected.length >= 3;
+    return `<div class="gift-card${isSel?' selected':''}${isDisabled?' disabled':''}" onclick="toggleGift('${g.id}')">
+      <div class="gift-rank">${isSel ? idx+1 : ''}</div>
+      <span class="gift-icon">${g.icon}</span>
+      <div class="gift-name">${g.name.replace('\n','<br>')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('sel-cnt').textContent = selected.length;
+}
+
+function toggleGift(id) {
+  const idx = selected.indexOf(id);
+  if (idx !== -1) selected.splice(idx, 1);
+  else if (selected.length < 3) selected.push(id);
+  renderGifts();
+}
+
+renderGifts();
+
+// ステップ更新
+function updateSteps(n) {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.querySelector(`#step-${i} .step-dot`);
+    const step = document.getElementById(`step-${i}`);
+    dot.classList.remove('active','done');
+    step.classList.remove('active');
+    if (i < n) { dot.classList.add('done'); dot.textContent = '✓'; }
+    else if (i === n) { dot.classList.add('active'); dot.textContent = i; step.classList.add('active'); }
+    else { dot.textContent = i; }
+    if (i < 4) {
+      const conn = document.getElementById(`conn-${i}`);
+      conn.classList.toggle('done', i < n);
+    }
+  }
+}
+
+function showSection(n) {
+  document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+  if (n === 'done') document.getElementById('sec-done').classList.add('active');
+  else document.getElementById(`sec-${n}`).classList.add('active');
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goNext(from) {
+  if (from === 1) {
+    const name = document.getElementById('r-name').value.trim();
+    const email = document.getElementById('r-email').value.trim();
+    if (!name || !email) {
+      showErr('err-1'); shake('sec-1'); return;
+    }
+  }
+  if (from === 2) {
+    const name = document.getElementById('n-name').value.trim();
+    if (!name) { showErr('err-2'); shake('sec-2'); return; }
+  }
+  if (from === 3) {
+    if (!selected.length) { showErr('err-3'); shake('sec-3'); return; }
+    buildConfirm();
+  }
+  hideErr(`err-${from}`);
+  updateSteps(from + 1);
+  showSection(from + 1);
+}
+
+function goBack(from) {
+  updateSteps(from - 1);
+  showSection(from - 1);
+}
+
+function showErr(id) { document.getElementById(id).style.display = 'block'; }
+function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+
+function shake(secId) {
+  const el = document.getElementById(secId);
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+}
+
+function buildConfirm() {
+  const giftNames = selected.map((id, i) => {
+    const g = GIFTS.find(x => x.id === id);
+    return `<span class="gift-tag">${i+1}. ${g.name.replace('\n','')}</span>`;
+  }).join('');
+
+  const rows = [
+    ['氏名（紹介者）', document.getElementById('r-name').value],
+    ['メール（紹介者）', document.getElementById('r-email').value],
+    ['電話（紹介者）', document.getElementById('r-phone').value || '—'],
+    ['氏名（紹介先）', document.getElementById('n-name').value],
+    ['メール（紹介先）', document.getElementById('n-email').value || '—'],
+    ['電話（紹介先）', document.getElementById('n-phone').value || '—'],
+    ['会社名（紹介先）', document.getElementById('n-company').value || '—'],
+    ['ギフトカード希望', `<div class="gift-tags">${giftNames}</div>`],
+  ];
+
+  document.getElementById('confirm-table').innerHTML = rows.map(([k,v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`
+  ).join('');
+}
+
+async function doSubmit() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.querySelector('span').textContent = '送信中...';
+
+  const payload = {
+    date: new Date().toISOString().slice(0,10),
+    referrerName:  document.getElementById('r-name').value,
+    referrerKana:  document.getElementById('r-kana').value,
+    referrerEmail: document.getElementById('r-email').value,
+    referrerPhone: document.getElementById('r-phone').value,
+    newName:       document.getElementById('n-name').value,
+    newKana:       document.getElementById('n-kana').value,
+    newEmail:      document.getElementById('n-email').value,
+    newPhone:      document.getElementById('n-phone').value,
+    newCompany:    document.getElementById('n-company').value,
+    gift1: selected[0] ? GIFTS.find(g=>g.id===selected[0]).name.replace('\n','') : '',
+    gift2: selected[1] ? GIFTS.find(g=>g.id===selected[1]).name.replace('\n','') : '',
+    gift3: selected[2] ? GIFTS.find(g=>g.id===selected[2]).name.replace('\n','') : '',
+  };
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    document.querySelector('.steps').style.display = 'none';
+    showSection('done');
+  } catch(e) {
+    showErr('err-4');
+    btn.disabled = false;
+    btn.querySelector('span').textContent = '送信する ✓';
+  }
+}
+
+// ── パーティクル背景 ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+function initParticles() {
+  particles = Array.from({length: 55}, () => ({
+    x: Math.random() * W, y: Math.random() * H,
+    r: Math.random() * 1.2 + 0.3,
+    dx: (Math.random() - 0.5) * 0.25,
+    dy: (Math.random() - 0.5) * 0.25,
+    a: Math.random(),
+  }));
+}
+
+function drawParticles() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(232,201,109,${p.a * 0.6})`;
+    ctx.fill();
+    p.x += p.dx; p.y += p.dy;
+    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+  });
+  requestAnimationFrame(drawParticles);
+}
+
+resize(); initParticles(); drawParticles();
+window.addEventListener('resize', () => { resize(); initParticles(); });
+</script>
+</body>
+</html>
