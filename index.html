@@ -290,14 +290,22 @@ async function doSubmit() {
   const btn = document.getElementById('submit-btn'); btn.disabled = true; btn.querySelector('span').textContent = '送信中...';
   const payload = {
     date: new Date().toISOString().slice(0,10),
+    // 紹介者情報
     referrerName: document.getElementById('r-name').value.trim(),
+    referrerKana: document.getElementById('r-kana').value.trim(),   
     referrerEmail: document.getElementById('r-email').value.trim(),
+    referrerPhone: document.getElementById('r-phone').value.trim(),  
+    referrerStaff: document.getElementById('r-staff').value.trim(),  
+    // お相手情報
     newName: document.getElementById('n-name').value.trim(),
+    newKana: document.getElementById('n-kana').value.trim(),        
+    newEmail: document.getElementById('n-email').value.trim(),       
+    newPhone: document.getElementById('n-phone').value.trim(),       
+    // ギフト情報
     gift1: selected[0] ? GIFTS.find(g=>g.id===selected[0]).name : '',
     gift2: selected[1] ? GIFTS.find(g=>g.id===selected[1]).name : '',
     gift3: selected[2] ? GIFTS.find(g=>g.id===selected[2]).name : '',
-  };
-  try {
+  };  try {
     await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
     document.querySelector('.steps').style.display = 'none'; showSection('done');
   } catch(e) { showErr('err-4'); btn.disabled = false; btn.querySelector('span').textContent = '送信する ✓'; }
